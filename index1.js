@@ -98,22 +98,46 @@ app.get("/user/:id/update", (req,res)=>{
 
 app.patch("/user/:id", (req,res)=>{
     let uid= req.params.id;
-    let {username, email, password}= req.body;
-    console.log(uid);
-    let q= "update user set username= ?, email= ?, password= ? where id= ?";
-    let queryObj= [username, email, password, uid];
-    console.log(queryObj);
+    let {username, email, password1}= req.body;
+    // console.log(uid);
+    let q1= `select password from user where id= ?`;
     try{
-        connection.query(q, queryObj, (err, result)=>{
-            res.redirect("/user");
-            // console.log("result");
-            // res.render("update.ejs", {result});
+        connection.query(q1, uid, (err, result)=>{
+            // console.log(result);
+            // // console.log(req);
+            // console.log(req.body.password);
+            // console.log(result[0].password);
+            if(result[0].password == req.body.password){
+                let q= `update user set username= '${username}', email= '${email}', password= '${result[0].password}' where id= '${uid}'`;
+                // let queryObj= [username, email, result[0].password, uid];
+                // console.log(queryObj);
+                try{
+                    connection.query(q, (err, result)=>{
+                        res.redirect("/user");
+                        // console.log(q);
+                        // console.log(result);
+                        // console.log("result");
+                        // res.render("update.ejs", {result});
+                    });
+                    // console.log(data);
+                } catch (err){
+                    console.log(err);
+                }
+            }
+            else{
+                res.send("Wrong password");
+            }
+            // // res.render("update.ejs", {result});
         });
         // console.log(data);
     } catch (err){
         console.log(err);
     }
+
+    
 });
+
+
 
 app.delete("/user/:id",(req,res)=>{
     let uid= req.params.id;
